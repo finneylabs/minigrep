@@ -9,7 +9,8 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
+    pub fn new(mut args: impl IntoIterator<Item=String>) -> Result<Config, &'static str> {
+        let mut args = args.into_iter();
         args.next();
 
         let query = match args.next() {
@@ -64,26 +65,36 @@ pub fn search_case_insensitive<'a>(query: &str, content: &'a str) -> Vec<&'a str
 mod test {
     use super::*;
 
-    //#[test]
-    //fn config_new() {
-    //   let args = ["program_name".to_string(), "bad".to_string(), "man".to_string()];
-    //   if let Ok(config) = Config::new(&args) {
-    //       assert_eq!(config.query, "bad");
-    //       assert_eq!(config.filename, "man");
-    //   } else {
-    //       assert!(false);
-    //   }
-    //}
+    #[test]
+    fn config_new() {
+      let args = ["program_name".to_string(), "bad".to_string(), "man".to_string()];
+      if let Ok(config) = Config::new(args) {
+          assert_eq!(config.query, "bad");
+          assert_eq!(config.filename, "man");
+      } else {
+          assert!(false);
+      }
+    }
 
-    //#[test]
-    //fn config_new_no_enough_args() {
-    //    let args = ["program_name".to_string()];
-    //    if let Err(err) = Config::new(&args) {
-    //        assert_eq!(err, "not enough arguments")
-    //    } else {
-    //        assert!(false);
-    //    }
-    //}
+    #[test]
+    fn config_new_no_enough_args() {
+       let args = ["program_name".to_string()];
+       if let Err(err) = Config::new(args) {
+           assert_eq!(err, "didn't get a query string");
+       } else {
+           assert!(false);
+       }
+    }
+
+    #[test]
+    fn config_new_no_filename() {
+       let args = ["program_name".to_string(), "the".to_string()];
+       if let Err(err) = Config::new(args) {
+           assert_eq!(err, "didn't get a filename string");
+       } else {
+           assert!(false);
+       }
+    }
 
     #[test]
     fn one_result() {
